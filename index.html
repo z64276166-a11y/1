@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>周末课程表 · 附小校区</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    background: #e9e9e9;
+    color: #333;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+  .page {
+    width: 100%;
+    max-width: 640px;
+    background: #f3f2f0;
+    position: relative;
+  }
+
+  /* Header */
+  .header {
+    position: relative;
+    padding: 38px 28px 60px;
+    background: linear-gradient(135deg, #d6392e 0%, #e85a4f 50%, #f07b6d 100%);
+    overflow: hidden;
+  }
+  .header::before,
+  .header::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .header::before {
+    width: 180px; height: 180px;
+    top: -60px; right: -30px;
+  }
+  .header::after {
+    width: 120px; height: 120px;
+    bottom: -40px; right: 80px;
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    position: relative;
+    z-index: 1;
+  }
+  .logo {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .logo .big {
+    font-size: 28px;
+    font-weight: 900;
+    color: #d6392e;
+    line-height: 1;
+  }
+  .logo .small {
+    font-size: 10px;
+    color: #d6392e;
+    margin-top: 3px;
+    letter-spacing: 1px;
+  }
+  .header-text {
+    color: #fff;
+  }
+  .header-text .eng {
+    font-size: 11px;
+    letter-spacing: 3px;
+    opacity: 0.85;
+    margin-bottom: 6px;
+  }
+  .header-text .title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+  }
+  .campus-tag {
+    display: inline-block;
+    padding: 4px 14px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 14px;
+    font-size: 13px;
+    color: #fff;
+  }
+
+  /* Content */
+  .content {
+    padding: 20px 20px 30px;
+  }
+
+  .day-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 4px 14px;
+  }
+  .day-badge {
+    display: inline-block;
+    padding: 5px 18px;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .day-badge.sat { background: #d6392e; }
+  .day-badge.sun { background: #1f6b4a; }
+  .day-en {
+    color: #888;
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+  .day-en::after {
+    content: "";
+    display: inline-block;
+    width: 80px;
+    height: 1px;
+    background: #ccc;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  .period-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #888;
+    font-size: 13px;
+    margin: 14px 4px 8px;
+  }
+  .period-label::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #d6392e;
+  }
+  .period-label.sun::before { background: #1f6b4a; }
+
+  /* Time slot card */
+  .slot {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+  }
+  .slot-time {
+    flex: 0 0 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+  }
+  .time-badge {
+    width: 56px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .time-badge.sat { background: #d6392e; }
+  .time-badge.sun { background: #1f6b4a; }
+  .slot-body {
+    flex: 1;
+    padding: 14px 14px 14px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .course {
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #f0e6dc;
+  }
+  .course-head {
+    padding: 6px 14px;
+    color: #fff;
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+  .course-head.red { background: #d6392e; }
+  .course-head.orange { background: #c9823a; }
+  .course-head.green { background: #1f6b4a; }
+
+  .course-body {
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 15px;
+    color: #333;
+  }
+  .course-body.bg-red { background: #fdf3ee; }
+  .course-body.bg-orange { background: #fbf1e2; }
+  .course-body.bg-green { background: #edf5ef; }
+
+  .cls-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .cls-tag.red { background: #d6392e; color: #fff; }
+  .cls-tag.orange { background: #c9823a; color: #fff; }
+  .cls-tag.green { background: #1f6b4a; color: #fff; }
+
+  .names {
+    letter-spacing: 2px;
+    word-spacing: 10px;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 24px 20px 36px;
+    font-size: 12px;
+    color: #666;
+    background: #f3f2f0;
+  }
+  .footer .brand {
+    color: #d6392e;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+  }
+  .footer .line {
+    margin: 3px 0;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="header-inner">
+        <div class="logo">
+          <div class="big">优</div>
+          <div class="small">佳菜教育</div>
+        </div>
+        <div class="header-text">
+          <div class="eng">YGULA OF EDUCA TGN</div>
+          <div class="title">周末课程表</div>
+          <span class="campus-tag">附小校区</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Saturday -->
+      <div class="day-label">
+        <span class="day-badge sat">周六</span>
+        <span class="day-en">Saturday</span>
+      </div>
+
+      <div class="period-label">上午</div>
+
+      <div class="slot">
+        <div class="slot-time"><div class="time-badge sat">8:30</div></div>
+        <div class="slot-body">
+          <div class="course">
+            <div class="course-head red">超级学习力 · 一阶段</div>
+            <div class="course-body bg-red">
+              <span class="cls-tag red">一班</span>
+              <span class="names">束梓程</span>
+            </div>
+          </div>
+          <div class="course">
+            <div class="course-head orange">超级学习力 · 二阶段</div>
+            <div class="course-body bg-orange">
+              <span class="cls-tag orange">二班</span>
+              <span class="names">张夏晨</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slot">
+        <div class="slot-time"><div class="time-badge sat">10:10</div></div>
+        <div class="slot-body">
+          <div class="course">
+            <div class="course-head red">超级学习力 · 一阶段</div>
+            <div class="course-body bg-red">
+              <span class="cls-tag red">一班</span>
+              <span class="names">陈敬嘉　张楚蔓</span>
+            </div>
+          </div>
+          <div class="course">
+            <div class="course-head orange">超级学习力 · 三阶段</div>
+            <div class="course-body bg-orange">
+              <span class="cls-tag orange">二班</span>
+              <span class="names">王佳怡　陈敬榕　乐乐</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="period-label">下午</div>
+
+      <div class="slot">
+        <div class="slot-time"><div class="time-badge sat">14:00</div></div>
+        <div class="slot-body">
+          <div class="course">
+            <div class="course-head red">超级学习力 · 一阶段</div>
+            <div class="course-body bg-red">
+              <span class="cls-tag red">一班</span>
+              <span class="names">李玥彤　张子硕　胡宇森</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slot">
+        <div class="slot-time"><div class="time-badge sat">16:00</div></div>
+        <div class="slot-body">
+          <div class="course">
+            <div class="course-head red">超级学习力 · 一阶段</div>
+            <div class="course-body bg-red">
+              <span class="cls-tag red">一班</span>
+              <span class="names">张敏玥　崔乾震　陈敬嘉</span>
+            </div>
+          </div>
+          <div class="course">
+            <div class="course-head orange">超级学习力 · 三阶段</div>
+            <div class="course-body bg-orange">
+              <span class="cls-tag orange">二班</span>
+              <span class="names">杨子骞　杨子晞　姜钰寰　陈敬榕</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sunday -->
+      <div class="day-label">
+        <span class="day-badge sun">周日</span>
+        <span class="day-en">Sunday</span>
+      </div>
+
+      <div class="period-label sun">上午</div>
+
+      <div class="slot">
+        <div class="slot-time"><div class="time-badge sun">10:10</div></div>
+        <div class="slot-body">
+          <div class="course">
+            <div class="course-head green">超级学习力 · 第一阶段</div>
+            <div class="course-body bg-green">
+              <span class="cls-tag green">班</span>
+              <span class="names">张少东　郝甜　马宛倪</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="period-label sun">下午</div>
+
+      <div class="slot">
+        <div class="slot-time"><div class="time-badge sun">16:00</div></div>
+        <div class="slot-body">
+          <div class="course">
+            <div class="course-head green">超级学习力 · 第一阶段</div>
+            <div class="course-body bg-green">
+              <span class="cls-tag green">班</span>
+              <span class="names">姜钰寰　杨子骞　杨子睎</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="brand">优菜德教育 · 附小校区</div>
+      <div class="line">咨询热线：138 0013 8000</div>
+      <div class="line">校区地址：成都市青羊区草市街XX号</div>
+    </div>
+  </div>
+</body>
+</html>
