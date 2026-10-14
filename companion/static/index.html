@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>视频通话</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
+</head>
+<body>
+<div id="stage">
+  <canvas id="avatar"></canvas>
+  <video id="herview" autoplay playsinline></video>
+
+  <div id="topbar">
+    <div id="who"><span id="name">…</span><span id="timer">00:00</span></div>
+    <div id="status">未接通</div>
+  </div>
+
+  <video id="selfview" autoplay muted playsinline></video>
+
+  <div id="subtitles">
+    <div id="sub-user"></div>
+    <div id="sub-her"></div>
+  </div>
+
+  <div id="controls">
+    <button id="btn-mic" class="round" title="麦克风">🎤</button>
+    <button id="btn-cam" class="round" title="摄像头">📷</button>
+    <form id="textform"><input id="textinput" placeholder="也可以打字…" autocomplete="off"></form>
+    <button id="btn-hang" class="round red" title="挂断">✕</button>
+  </div>
+
+  <div id="lobby">
+    <div id="lobby-name">…</div>
+    <div id="lobby-tip">建议戴耳机，效果更好</div>
+    <button id="btn-call">接通视频</button>
+    <a href="/memory" target="_blank" id="memlink">查看她记得的事</a>
+  </div>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
