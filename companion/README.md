@@ -15,7 +15,7 @@
 
 1. 安装 [Python 3.10~3.12](https://www.python.org/downloads/)（安装时勾选 *Add Python to PATH*）
 2. 在 [DeepSeek 开放平台](https://platform.deepseek.com/) 充值几块钱，创建一个 API Key
-3. 双击 `start.bat`
+3. **Windows**：双击 `start.bat`；**Mac**：打开"终端"，把 `start.sh` 拖进终端窗口后回车（如果提示没有权限，先运行 `chmod +x` 再把文件拖进来）
    - 第一次会自动安装依赖，然后弹出记事本让你填 `DEEPSEEK_API_KEY`，填好保存后再双击一次
 4. 浏览器（推荐 Chrome / Edge）会自动打开 `http://127.0.0.1:8765`，点 **接通视频**，允许麦克风
 
@@ -30,6 +30,7 @@
 | 名字、怎么称呼你 | `.env` 里的 `COMPANION_NAME` / `USER_NAME` |
 | 性格、背景、说话方式 | `persona.md`（写得越细越像真人） |
 | 声音 | `.env` 里的 `EDGE_VOICE`，可选：`zh-CN-XiaoyiNeural`（活泼）、`zh-CN-XiaoxiaoNeural`（温柔）、`zh-CN-liaoning-XiaobeiNeural`（东北话）、`zh-TW-HsiaoChenNeural`（台湾腔） |
+| 语音识别更准（Mac M 系列芯片 / 内存 16 GB 以上） | `.env` 里设 `WHISPER_MODEL=medium` |
 | 想要独一无二的声音 | 部署 [GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)，用 1 分钟左右的参考音频克隆声音，`.env` 里设 `TTS_ENGINE=gptsovits` |
 | 她多久不说话会主动找你 | `.env` 里的 `IDLE_SECONDS` |
 | 看她记住了什么 | 页面上的"查看她记得的事"，或访问 `http://127.0.0.1:8765/memory` |
