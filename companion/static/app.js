@@ -58,21 +58,32 @@ async function connectRealistic() {
   pc = new RTCPeerConnection({ sdpSemantics: "unified-plan" });
   pc.addTransceiver("video", { direction: "recvonly" });
   pc.addTransceiver("audio", { direction: "recvonly" });
-  pc.ontrack = (e) => { if (e.track.kind === "video" || !$("herview").srcObject) $("herview").srcObject = e.streams[0]; };
+  const stream = new MediaStream();
+  pc.ontrack = (e) => { stream.addTrack(e.track); $("herview").srcObject = stream; };
   await pc.setLocalDescription(await pc.createOffer());
   await new Promise((ok) => {
     if (pc.iceGatheringState === "complete") return ok();
     pc.addEventListener("icegatheringstatechange", () => pc.iceGatheringState === "complete" && ok());
     setTimeout(ok, 3000);
   });
-  const r = await fetch(`${CFG.liveTalkingUrl}/offer`, {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sdp: pc.localDescription.sdp, type: pc.localDescription.type }),
-  });
-  const ans = await r.json();
-  const a = ans.data || ans;
-  await pc.setRemoteDescription({ sdp: a.sdp, type: a.type });
-  avatarSession = String(a.sessionid);
+  if (CFG.avatarTransport === "rtcpush") {
+    // 画面由 GPU 机器推到云端 SRS，这里用 WHEP 从 SRS 拉流；LiveTalking 的会话固定为 0
+    const r = await fetch(CFG.whepUrl, {
+      method: "POST", headers: { "Content-Type": "application/sdp" }, body: pc.localDescription.sdp,
+    });
+    if (!r.ok) throw new Error(`拉流失败 ${r.status}`);
+    await pc.setRemoteDescription({ type: "answer", sdp: await r.text() });
+    avatarSession = "0";
+  } else {
+    const r = await fetch(`${CFG.liveTalkingUrl}/offer`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sdp: pc.localDescription.sdp, type: pc.localDescription.type }),
+    });
+    const ans = await r.json();
+    const a = ans.data || ans;
+    await pc.setRemoteDescription({ sdp: a.sdp, type: a.type });
+    avatarSession = String(a.sessionid);
+  }
   // 轮询她是否在说话（用于打断判断和沉默计时）
   speakPoll = setInterval(async () => {
     try {
@@ -291,7 +302,7 @@ async function startCall() {
   if (CFG.avatarMode === "realistic" && !pc) {
     setStatus("正在接通画面…");
     try { await connectRealistic(); }
-    catch (e) { console.error(e); setStatus("连不上 LiveTalking，请确认它已启动"); }
+    catch (e) { console.error(e); setStatus("画面没接通：" + e.message); }
   }
   connect();
   callStart = Date.now();

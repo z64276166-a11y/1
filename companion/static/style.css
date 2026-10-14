@@ -5,7 +5,7 @@ html, body { height: 100%; background: #111; color: #fff; overflow: hidden;
 #stage { position: relative; width: 100%; height: 100%;
   background: radial-gradient(ellipse at 50% 30%, #f6e7dc 0%, #d9c2b4 45%, #6e5a55 100%); }
 #avatar, #herview { position: absolute; inset: 0; width: 100%; height: 100%; }
-#herview { object-fit: cover; display: none; background: #000; }
+#herview { object-fit: contain; display: none; background: #000; }
 body.realistic #herview { display: block; }
 body.realistic #avatar { display: none; }
 

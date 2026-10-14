@@ -37,7 +37,7 @@ class Brain:
         self.model = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
         self.name = os.getenv("COMPANION_NAME", "小雪")
         self.user = os.getenv("USER_NAME", "你")
-        self.persona_path = Path(__file__).parent / "persona.md"
+        self.persona_path = Path(__file__).parent / os.getenv("PERSONA_FILE", "persona.md")
 
     def persona(self) -> str:
         text = self.persona_path.read_text(encoding="utf-8")

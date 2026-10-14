@@ -55,6 +55,9 @@ async def config():
         "model": os.getenv("LIVE2D_MODEL") or DEFAULT_MODEL,
         "avatarMode": AVATAR_MODE,
         "liveTalkingUrl": LT_URL,
+        # rtcpush：画面经云端 SRS 中转（AutoDL 等没有公网 UDP 的机器用这个）
+        "avatarTransport": os.getenv("AVATAR_TRANSPORT", "webrtc"),
+        "whepUrl": os.getenv("SRS_WHEP_URL", ""),
     }
 
 
