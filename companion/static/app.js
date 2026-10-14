@@ -59,7 +59,11 @@ async function connectRealistic() {
   pc.addTransceiver("video", { direction: "recvonly" });
   pc.addTransceiver("audio", { direction: "recvonly" });
   const stream = new MediaStream();
-  pc.ontrack = (e) => { stream.addTrack(e.track); $("herview").srcObject = stream; };
+  pc.ontrack = (e) => {
+    stream.addTrack(e.track);
+    $("herview").srcObject = stream;
+    if (e.track.kind === "video") $("herbg").srcObject = new MediaStream([e.track]);
+  };
   await pc.setLocalDescription(await pc.createOffer());
   await new Promise((ok) => {
     if (pc.iceGatheringState === "complete") return ok();
@@ -318,6 +322,7 @@ function hangUp() {
   ws?.close(); ws = null;
   clearInterval(speakPoll); pc?.close(); pc = null; avatarSession = null;
   $("herview").srcObject = null;
+  $("herbg").srcObject = null;
   $("sub-her").textContent = ""; $("sub-user").textContent = "";
   document.body.classList.remove("in-call");
   setStatus("已挂断");

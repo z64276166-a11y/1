@@ -4,9 +4,12 @@ html, body { height: 100%; background: #111; color: #fff; overflow: hidden;
 
 #stage { position: relative; width: 100%; height: 100%;
   background: radial-gradient(ellipse at 50% 30%, #f6e7dc 0%, #d9c2b4 45%, #6e5a55 100%); }
-#avatar, #herview { position: absolute; inset: 0; width: 100%; height: 100%; }
-#herview { object-fit: contain; display: none; background: #000; }
-body.realistic #herview { display: block; }
+#avatar, #herview, #herbg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#herview { object-fit: contain; display: none; }
+/* 竖屏画面在横屏上时，两侧用同一画面的模糊版本填满，而不是黑边 */
+#herbg { object-fit: cover; display: none; filter: blur(40px) brightness(.6); transform: scale(1.15); }
+body.realistic #herview, body.realistic #herbg { display: block; }
+body.realistic #stage { background: #000; }
 body.realistic #avatar { display: none; }
 
 #topbar { position: absolute; top: 0; left: 0; right: 0; padding: 18px 24px;
