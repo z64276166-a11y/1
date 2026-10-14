@@ -58,3 +58,8 @@ body:not(.in-call) #controls, body:not(.in-call) #subtitles { visibility: hidden
   #controls { gap: 10px; padding: 16px; }
   .round { width: 48px; height: 48px; }
 }
+
+/* 竖屏设备上把横屏画面裁剪铺满（她的脸在画面中间） */
+@media (orientation: portrait) {
+  #herview { object-fit: cover; object-position: 50% 30%; }
+}
