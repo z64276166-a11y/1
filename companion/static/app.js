@@ -103,6 +103,48 @@ async function connectRealistic() {
   }, 400);
 }
 
+// ---------------- 摄像头噪点（写实模式）----------------
+// 真实的手机/电脑摄像头画面总有细微、每帧都在变的噪点。噪点只在浏览器里最后叠加：
+// 烧进底片会让 wav2lip 重绘的嘴部区域显得过于干净，WebRTC 压缩也会把它抹掉。
+function startGrain(strength) {
+  const cv = $("grain");
+  if (!strength) return;
+  const S = 192, tiles = [];
+  for (let k = 0; k < 6; k++) {
+    const c = document.createElement("canvas");
+    c.width = c.height = S;
+    const ctx = c.getContext("2d"), img = ctx.createImageData(S, S);
+    for (let i = 0; i < S * S; i++) {
+      // 近似高斯的亮度噪声 + 少量色彩噪声
+      // strength = 1 时亮度噪声标准差约 3 个灰阶，接近室内光线下手机前置摄像头
+      const n = (Math.random() + Math.random() + Math.random() - 1.5) * 6 * strength;
+      img.data[i * 4] = 128 + n + (Math.random() - 0.5) * 3 * strength;
+      img.data[i * 4 + 1] = 128 + n;
+      img.data[i * 4 + 2] = 128 + n + (Math.random() - 0.5) * 3 * strength;
+      img.data[i * 4 + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    tiles.push(c);
+  }
+  const ctx = cv.getContext("2d");
+  let last = 0;
+  const draw = (t) => {
+    requestAnimationFrame(draw);
+    if (!inCall || t - last < 40) return;  // 约 25fps，和视频帧率一致
+    last = t;
+    // 噪点画在较低分辨率上再放大，颗粒大小接近真实传感器噪声
+    const w = Math.ceil(cv.clientWidth / 1.5), h = Math.ceil(cv.clientHeight / 1.5);
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+    const pat = ctx.createPattern(tiles[(Math.random() * tiles.length) | 0], "repeat");
+    ctx.save();
+    ctx.translate(-Math.random() * S, -Math.random() * S);
+    ctx.fillStyle = pat;
+    ctx.fillRect(0, 0, w + S, h + S);
+    ctx.restore();
+  };
+  requestAnimationFrame(draw);
+}
+
 // ---------------- 播放她的声音 ----------------
 let playQueue = [];
 let currentSource = null;
@@ -348,6 +390,9 @@ $("textform").onsubmit = (e) => {
   document.title = `和${CFG.name}视频通话`;
   if (!CFG.asr) $("lobby-tip").textContent = "语音识别没加载成功，暂时只能打字（看服务端窗口报错）";
   $("btn-cam").classList.add("off");
-  if (CFG.avatarMode === "realistic") document.body.classList.add("realistic");
+  if (CFG.avatarMode === "realistic") {
+    document.body.classList.add("realistic");
+    startGrain(CFG.cameraGrain);
+  }
   else await initAvatar();
 })();

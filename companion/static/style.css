@@ -11,6 +11,12 @@ html, body { height: 100%; background: #111; color: #fff; overflow: hidden;
 body.realistic #herview, body.realistic #herbg { display: block; }
 body.realistic #stage { background: #000; }
 body.realistic #avatar { display: none; }
+/* 真实摄像头质感：动态噪点 + 轻微暗角，在画面合成、压缩之后再叠加 */
+#grain { position: absolute; inset: 0; width: 100%; height: 100%; display: none;
+  pointer-events: none; mix-blend-mode: overlay; image-rendering: auto; }
+body.realistic.in-call #grain { display: block; }
+body.realistic #stage::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 45%, transparent 55%, #0000002e 100%); }
 
 #topbar { position: absolute; top: 0; left: 0; right: 0; padding: 18px 24px;
   display: flex; justify-content: space-between; align-items: center;

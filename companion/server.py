@@ -58,6 +58,8 @@ async def config():
         # rtcpush：画面经云端 SRS 中转（AutoDL 等没有公网 UDP 的机器用这个）
         "avatarTransport": os.getenv("AVATAR_TRANSPORT", "webrtc"),
         "whepUrl": os.getenv("SRS_WHEP_URL", ""),
+        # 写实模式下在浏览器里叠加的摄像头噪点强度（0 = 关闭）
+        "cameraGrain": float(os.getenv("CAMERA_GRAIN", "1")),
     }
 
 

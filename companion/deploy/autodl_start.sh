@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # 在【AutoDL GPU 机器】上运行（镜像选社区镜像 lipku/livetalking）
-# 用法：bash autodl_start.sh 阿里云服务器公网IP [她的视频路径]
+# 用法：bash autodl_start.sh 阿里云服务器公网IP [她的视频路径，默认 /root/autodl-tmp/her.mp4]
+#   想用汉服版：bash autodl_start.sh 阿里云服务器公网IP /root/autodl-tmp/her_hanfu.mp4
 # 第一次运行会用视频生成形象（几分钟），之后再运行就直接启动
 set -e
 SRS_IP="$1"
 VIDEO="${2:-/root/autodl-tmp/her.mp4}"
-AVATAR="${AVATAR:-her_wav2lip}"
+# 形象 ID 跟着视频文件名走：换了视频就会重新生成，不会误用旧形象
+AVATAR="${AVATAR:-$(basename "${VIDEO%.*}")_wav2lip}"
 VOICE="${VOICE:-zh-CN-XiaoyiNeural}"
 [ -n "$SRS_IP" ] || { echo "用法：bash autodl_start.sh 阿里云服务器公网IP [视频路径]"; exit 1; }
 
