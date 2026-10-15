@@ -1,4 +1,6 @@
 """大脑：DeepSeek 对话 + 记忆整理。"""
+from __future__ import annotations
+
 import json
 import os
 import re

@@ -1,4 +1,6 @@
 """长期记忆：SQLite 存储聊天记录、关于用户的事实、过往事件摘要。"""
+from __future__ import annotations
+
 import json
 import sqlite3
 import time

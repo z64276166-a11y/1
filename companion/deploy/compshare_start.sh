@@ -2,7 +2,7 @@
 # 在【优云智算 compshare.cn】的 "LiveTalking一键部署" 镜像实例上运行（地域选 华北二A）
 # 这台机器有公网 IP，画面直接用 WebRTC 推给浏览器，不需要阿里云中转、也不需要 SSH 隧道
 #
-# 用法：把 her.mp4 和本脚本上传到同一个文件夹，然后在 JupyterLab 的 Terminal 里：
+# 用法：在 JupyterLab 的 Terminal 里运行（her.mp4 不在同目录时会自动从 GitHub 下载）：
 #   bash compshare_start.sh                 # 默认用同目录下的 her.mp4，wav2lip 模型
 #   MODEL=musetalk bash compshare_start.sh  # 换成更清晰的 MuseTalk（第一次生成形象较慢）
 #   DASHSCOPE_API_KEY=sk-xxx bash compshare_start.sh  # 用阿里云通义千问语音（推荐，国内稳定）
@@ -25,6 +25,14 @@ PORT="${PORT:-8010}"
 # 形象 ID 跟着视频文件名和模型走：换了视频或模型就会重新生成
 AVATAR="${AVATAR:-$(basename "${VIDEO%.*}")_${MODEL}}"
 
+RAW="https://raw.githubusercontent.com/z64276166-a11y/1/claude/digital-companion-difficulty-fu7ztw/companion"
+fetch() {  # 从 GitHub 下载仓库里的文件，直连不通就走国内加速镜像
+  for p in "" "https://ghfast.top/" "https://gh-proxy.com/" "https://ghproxy.net/"; do
+    if curl -fsSL --max-time 180 -o "$2.part" "${p}${RAW}/$1" && [ -s "$2.part" ]; then mv "$2.part" "$2"; return 0; fi
+  done
+  rm -f "$2.part"; return 1
+}
+
 if command -v conda >/dev/null 2>&1; then
   eval "$(conda shell.bash hook)"
   conda activate livetalking
@@ -36,6 +44,10 @@ pkill -f "python.*app.py" 2>/dev/null || true
 sleep 2
 
 if [ ! -d "data/avatars/$AVATAR" ]; then
+  if [ ! -f "$VIDEO" ] && [ "$VIDEO" = "$HERE/her.mp4" ]; then
+    echo ">>> 从 GitHub 下载她的视频 her.mp4…"
+    fetch avatar/her.mp4 "$VIDEO" || true
+  fi
   [ -f "$VIDEO" ] || { echo "❌ 没找到视频 $VIDEO，请把 her.mp4 上传到和本脚本同一个文件夹"; exit 1; }
   if [ "$MODEL" = "wav2lip" ]; then
     [ -f models/wav2lip.pth ] || { echo "❌ 镜像里没有 models/wav2lip.pth，改用：MODEL=musetalk bash $0"; exit 1; }

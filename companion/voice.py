@@ -1,4 +1,6 @@
 """耳朵（faster-whisper 本地识别）和嘴巴（edge-tts / GPT-SoVITS）。"""
+from __future__ import annotations
+
 import asyncio
 import os
 

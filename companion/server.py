@@ -1,4 +1,6 @@
 """数字人女友 - 服务端。启动后浏览器打开 http://127.0.0.1:8765"""
+from __future__ import annotations
+
 import asyncio
 import base64
 import json
