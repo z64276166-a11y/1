@@ -27,8 +27,8 @@ done
 unzip -q "$TMP/app.zip" -d "$TMP"
 SRC="$(find "$TMP" -maxdepth 2 -type d -name companion | head -1)"
 mkdir -p "$DIR"
-# 更新时保留你的配置（.env）、她的记忆（data/）和已安装的环境（.venv/）
-rsync -a --exclude ".env" --exclude "data/" --exclude ".venv/" "$SRC/" "$DIR/"
+# 下载包里没有 .env、data/、.venv/，覆盖更新时你的配置、她的记忆和已装的环境都会保留
+cp -R "$SRC/." "$DIR/"
 rm -rf "$TMP"
 chmod +x "$DIR/start.sh"
 
