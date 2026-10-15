@@ -5,13 +5,22 @@
 # 用法：把 her.mp4 和本脚本上传到同一个文件夹，然后在 JupyterLab 的 Terminal 里：
 #   bash compshare_start.sh                 # 默认用同目录下的 her.mp4，wav2lip 模型
 #   MODEL=musetalk bash compshare_start.sh  # 换成更清晰的 MuseTalk（第一次生成形象较慢）
-#   VOICE=zh-CN-XiaoxiaoNeural bash compshare_start.sh   # 换声音
+#   DASHSCOPE_API_KEY=sk-xxx bash compshare_start.sh  # 用阿里云通义千问语音（推荐，国内稳定）
+#   VOICE=Cherry bash compshare_start.sh    # 换声音（千问语音的音色名，或 Edge 语音名）
 #   SRS_IP=139.196.104.146 bash compshare_start.sh      # 没有独立IP的地域：画面推到阿里云 SRS 中转
 set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"
 VIDEO="${1:-$HERE/her.mp4}"
 MODEL="${MODEL:-wav2lip}"
-VOICE="${VOICE:-zh-CN-XiaoyiNeural}"
+# 语音合成：微软 Edge 语音经常拒绝云服务器的 IP（403），有阿里云百炼 Key 就用通义千问语音
+KEY_FILE="$HERE/.dashscope_key"
+if [ -n "$DASHSCOPE_API_KEY" ]; then echo "$DASHSCOPE_API_KEY" > "$KEY_FILE"; chmod 600 "$KEY_FILE"
+elif [ -f "$KEY_FILE" ]; then DASHSCOPE_API_KEY="$(cat "$KEY_FILE")"; fi
+export DASHSCOPE_API_KEY
+if [ -z "$TTS" ]; then
+  if [ -n "$DASHSCOPE_API_KEY" ]; then TTS=qwentts; else TTS=edgetts; fi
+fi
+if [ "$TTS" = "qwentts" ]; then VOICE="${VOICE:-Cherry}"; else VOICE="${VOICE:-zh-CN-XiaoyiNeural}"; fi
 PORT="${PORT:-8010}"
 # 形象 ID 跟着视频文件名和模型走：换了视频或模型就会重新生成
 AVATAR="${AVATAR:-$(basename "${VIDEO%.*}")_${MODEL}}"
@@ -44,7 +53,7 @@ if [ ! -d "data/avatars/$AVATAR" ]; then
 fi
 
 echo
-echo ">>> 启动：模型 $MODEL，形象 $AVATAR，声音 $VOICE"
+echo ">>> 启动：模型 $MODEL，形象 $AVATAR，语音 $TTS / $VOICE"
 if [ -n "$SRS_IP" ]; then
   # 没有独立 IP：画面主动推到阿里云 SRS，Mac 从 SRS 拉流；控制接口用控制台的"实例级端口配置"暴露 $PORT
   echo "    画面推流到 SRS：$SRS_IP"
@@ -53,7 +62,7 @@ if [ -n "$SRS_IP" ]; then
   echo "                     LIVETALKING_URL=控制台给 $PORT 端口分配的外网地址"
   echo
   exec python app.py --transport rtcpush --model "$MODEL" --avatar_id "$AVATAR" \
-    --tts edgetts --REF_FILE "$VOICE" --listenport "$PORT" \
+    --tts "$TTS" --REF_FILE "$VOICE" --listenport "$PORT" \
     --push_url "http://$SRS_IP:1985/rtc/v1/whip/?app=live&stream=livestream"
 fi
 IP=$(curl -s --max-time 5 ifconfig.me || echo "你的服务器公网IP")
@@ -62,4 +71,4 @@ echo "                     LIVETALKING_URL=http://$IP:$PORT"
 echo "    （先确认控制台防火墙已放行 TCP $PORT 和 UDP 50000-51000）"
 echo
 exec python app.py --transport webrtc --model "$MODEL" --avatar_id "$AVATAR" \
-  --tts edgetts --REF_FILE "$VOICE" --listenport "$PORT"
+  --tts "$TTS" --REF_FILE "$VOICE" --listenport "$PORT"
