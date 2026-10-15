@@ -6,6 +6,7 @@
 #   bash compshare_start.sh                 # 默认用同目录下的 her.mp4，wav2lip 模型
 #   MODEL=musetalk bash compshare_start.sh  # 换成更清晰的 MuseTalk（第一次生成形象较慢）
 #   VOICE=zh-CN-XiaoxiaoNeural bash compshare_start.sh   # 换声音
+#   SRS_IP=139.196.104.146 bash compshare_start.sh      # 没有独立IP的地域：画面推到阿里云 SRS 中转
 set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"
 VIDEO="${1:-$HERE/her.mp4}"
@@ -42,10 +43,22 @@ if [ ! -d "data/avatars/$AVATAR" ]; then
   fi
 fi
 
-IP=$(curl -s --max-time 5 ifconfig.me || echo "你的服务器公网IP")
 echo
 echo ">>> 启动：模型 $MODEL，形象 $AVATAR，声音 $VOICE"
-echo "    Mac 上 .env 里填：LIVETALKING_URL=http://$IP:$PORT"
+if [ -n "$SRS_IP" ]; then
+  # 没有独立 IP：画面主动推到阿里云 SRS，Mac 从 SRS 拉流；控制接口用控制台的"实例级端口配置"暴露 $PORT
+  echo "    画面推流到 SRS：$SRS_IP"
+  echo "    Mac 上 .env 里填：AVATAR_TRANSPORT=rtcpush"
+  echo "                     SRS_WHEP_URL=http://$SRS_IP:1985/rtc/v1/whep/?app=live&stream=livestream"
+  echo "                     LIVETALKING_URL=控制台给 $PORT 端口分配的外网地址"
+  echo
+  exec python app.py --transport rtcpush --model "$MODEL" --avatar_id "$AVATAR" \
+    --tts edgetts --REF_FILE "$VOICE" --listenport "$PORT" \
+    --push_url "http://$SRS_IP:1985/rtc/v1/whip/?app=live&stream=livestream"
+fi
+IP=$(curl -s --max-time 5 ifconfig.me || echo "你的服务器公网IP")
+echo "    Mac 上 .env 里填：AVATAR_TRANSPORT=webrtc"
+echo "                     LIVETALKING_URL=http://$IP:$PORT"
 echo "    （先确认控制台防火墙已放行 TCP $PORT 和 UDP 50000-51000）"
 echo
 exec python app.py --transport webrtc --model "$MODEL" --avatar_id "$AVATAR" \
